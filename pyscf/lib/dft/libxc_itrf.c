@@ -382,12 +382,12 @@ int LIBXC_check_ext_params(ext_params_cache_t *ext_params)
             return 1;
         }
         int ref_n = func.info->ext_params.n;
-        xc_func_end(&func);
         if (ref_n != p->n) {
             fprintf(stderr, "Inconsistent number of parameters for %s (%d).\n"
                     "    Expected %d but got %lu.\n", func.info->name, func.info->number, ref_n, p->n);
             return 2;
         }
+        xc_func_end(&func);
         ++p;
     }
     return 0;
