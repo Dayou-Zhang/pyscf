@@ -34,6 +34,10 @@ add_library(xc_itrf SHARED libxc_itrf.c)
 set_target_properties(xc_itrf PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 target_link_libraries(xc_itrf xc ${OPENMP_C_PROPERTIES})
+add_library(xc_itrf2 SHARED libxc_itrf2.c)
+set_target_properties(xc_itrf2 PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+target_link_libraries(xc_itrf2 xc ${OPENMP_C_PROPERTIES})
 endif()
 
 if(ENABLE_XCFUN)
