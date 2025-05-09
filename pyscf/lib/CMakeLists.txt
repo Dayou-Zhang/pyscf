@@ -218,7 +218,10 @@ endif()
 
 if(NOT DISABLE_DFT)
 add_subdirectory(dft)
-add_subdirectory(pdft)
+
+if(ENABLE_LIBXC)
+  add_subdirectory(pdft)
+endif() # ENABLE_LIBXC
 
 if(ENABLE_LIBXC AND BUILD_LIBXC)
   ExternalProject_Add(libxc
@@ -237,6 +240,7 @@ if(ENABLE_LIBXC AND BUILD_LIBXC)
   )
   add_dependencies(xc_itrf libxc)
   add_dependencies(dft libxc)
+  add_dependencies(pdft libxc)
 endif() # ENABLE_LIBXC
 
 if(ENABLE_XCFUN AND BUILD_XCFUN)
