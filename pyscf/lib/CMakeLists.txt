@@ -218,8 +218,6 @@ endif()
 
 if(NOT DISABLE_DFT)
 add_subdirectory(dft)
-
-if(NOT DISABLE_DFT)
 add_subdirectory(pdft)
 
 if(ENABLE_LIBXC AND BUILD_LIBXC)
