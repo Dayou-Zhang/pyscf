@@ -239,7 +239,6 @@ if(ENABLE_LIBXC AND BUILD_LIBXC)
             -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
   )
   add_dependencies(xc_itrf libxc)
-  add_dependencies(xc_itrf2 libxc)
   add_dependencies(dft libxc)
   add_dependencies(pdft libxc)
 endif() # ENABLE_LIBXC
