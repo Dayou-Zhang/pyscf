@@ -176,7 +176,7 @@ XC_CODES.update({
     'B3P86V5'       : '.2*HF + .08*SLATER + .72*B88, .81*P86 + .19*VWN', # VWN5 version
     #'O3LYP5'        : '.1161*HF + .9262*SLATER + .8133*OPTXCORR, .81*LYP + .19*VWN5',
     #'O3LYPG'        : '.1161*HF + .9262*SLATER + .8133*OPTXCORR, .81*LYP + .19*VWNRPA',
-    'O3LYP'         : 404, # in libxc == '.1161*HF + 0.071006917*SLATER + .8133*OPTX, .81*LYP + .19*VWN5', may be erroreous
+    'O3LYP'         : 404,#in libxc=='.1161*HF + 0.071006917*SLATER + .8133*OPTX, .81*LYP + .19*VWN5', may be erroreous
     'MPW3PW'        : 'MPW3PW5',  # VWN5 version
     'MPW3PW5'       : '.2*HF + .08*SLATER + .72*MPW91, .81*PW91 + .19*VWN',
     'MPW3PWG'       : 415,  # used by Gaussian
