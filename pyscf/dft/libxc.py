@@ -327,17 +327,17 @@ def is_hybrid_xc(xc_code):
         if 'HF' in xc_code:
             return True
         xc = _get_xc(xc_code)
-        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs)
+        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs, xc_code)
     elif numpy.issubdtype(type(xc_code), numpy.integer):
         xc = _get_xc(xc_code)
-        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs)
+        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs, xc_code)
     else:
         return any((is_hybrid_xc(x) for x in xc_code))
 
-def _is_hybrid_xc(xc_objs, hyb, facs):
+def _is_hybrid_xc(xc_objs, hyb, facs, xc_code):
     if _hybrid_coeff(xc_objs, hyb, facs) != 0:
         return True
-    if _rsh_coeff(xc_objs, hyb, facs) != (0, 0, 0):
+    if _rsh_coeff(xc_objs, hyb, facs, xc_code) != (0, 0, 0):
         return True
     return False
 
@@ -1079,7 +1079,7 @@ def _libxc_to_xcfun_indices(xctype, spin=0, deriv=1):
     return numpy.hstack(idx)
 
 def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
-    xc = _get_xc(xc_code, spin)
+    xc = _get_xc(xc_code, spin, omega)
     assert deriv <= xc.max_deriv_order
     xctype = xc.xc_type
     assert xctype in ('HF', 'LDA', 'GGA', 'MGGA')
@@ -1087,9 +1087,6 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
     rho = numpy.asarray(rho, order='C', dtype=numpy.double)
     if xctype == 'MGGA' and rho.shape[-2] == 6:
         rho = numpy.asarray(rho[...,[0,1,2,3,5],:], order='C')
-
-    if omega is not None:
-        raise NotImplementedError('use register_custom_functional_() to set omega')
 
     if xc.needs_laplacian:
         raise NotImplementedError('laplacian in meta-GGA method')
@@ -1415,10 +1412,12 @@ _CUSTOM_FUNC_R = {}
 _CUSTOM_FUNC_U = {}
 
 @lru_cache(100)
-def _get_system_xc(xc_code, spin):
-    return XCFunctionalCache(xc_code, spin)
+def _get_system_xc(xc_code, spin, omega=None):
+    return XCFunctionalCache(xc_code, spin, omega)
 
-def _get_xc(xc_code, spin=0):
+def _get_xc(xc_code, spin=0, omega=None):
+    if omega is not None:
+        return _get_system_xc(xc_code, spin, omega)
     try:
         if spin > 0:
             return _CUSTOM_FUNC_U[xc_code]
