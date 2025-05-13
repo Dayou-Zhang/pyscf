@@ -442,18 +442,19 @@ def rsh_coeff(xc_code):
     if xc_code is None:
         return 0, 0, 0
 
-    # check_omega = True
-    # if isinstance(xc_code, str) and ',' in xc_code:
-    #     # Parse only X part for the RSH coefficients.  This is to handle
-    #     # exceptions for C functionals such as M11.
-    #     xc_code = format_xc_code(xc_code)
-    #     xc_code = xc_code.split(',')[0] + ','
-    #     if 'SR_HF' in xc_code or 'LR_HF' in xc_code or 'RSH(' in xc_code:
-    #         check_omega = False
     xc = _get_xc(xc_code)
     return xc.rsh_coeff
 
-def _rsh_coeff(xc_objs, hyb, facs, check_omega=True):
+def _rsh_coeff(xc_objs, hyb, facs, xc_code):
+    check_omega = True
+    if isinstance(xc_code, str) and ',' in xc_code:
+        # Parse only X part for the RSH coefficients.  This is to handle
+        # exceptions for C functionals such as M11.
+        xc_code = format_xc_code(xc_code)
+        xc_code = xc_code.split(',')[0] + ','
+        if 'SR_HF' in xc_code or 'LR_HF' in xc_code or 'RSH(' in xc_code:
+            check_omega = False
+
     hyb, alpha, omega = hyb
     if omega == 0:
         # SR and LR Coulomb share the same coefficients
@@ -1336,7 +1337,7 @@ class XCFunctionalCache:
 
     @cached_property
     def rsh_coeff(self):
-        return _rsh_coeff(self.xc_objs, self.hyb, self.facs, True)
+        return _rsh_coeff(self.xc_objs, self.hyb, self.facs, self.xc_code)
 
     def customize_(self, ext_params=None, omega=None, hyb=None, facs=None,
                    density_threshold=None, callback=None, clear=True):
