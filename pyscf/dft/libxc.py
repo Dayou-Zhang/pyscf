@@ -327,17 +327,17 @@ def is_hybrid_xc(xc_code):
         if 'HF' in xc_code:
             return True
         xc = _get_xc(xc_code)
-        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs)
+        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs, xc_code)
     elif numpy.issubdtype(type(xc_code), numpy.integer):
         xc = _get_xc(xc_code)
-        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs)
+        return _is_hybrid_xc(xc.xc_objs, xc.hyb, xc.facs, xc_code)
     else:
         return any((is_hybrid_xc(x) for x in xc_code))
 
-def _is_hybrid_xc(xc_objs, hyb, facs):
+def _is_hybrid_xc(xc_objs, hyb, facs, xc_code):
     if _hybrid_coeff(xc_objs, hyb, facs) != 0:
         return True
-    if _rsh_coeff(xc_objs, hyb, facs) != (0, 0, 0):
+    if _rsh_coeff(xc_objs, hyb, facs, xc_code) != (0, 0, 0):
         return True
     return False
 
@@ -1088,6 +1088,10 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
         rho = numpy.asarray(rho[...,[0,1,2,3,5],:], order='C')
 
     if omega is not None:
+        if numpy.isscalar(omega):
+            omega = [omega] * xc.nfunc
+        else:
+            assert len(omega) == xc.nfunc
         xc._set_omega_density_threshold_(omega, 0)
 
     if xc.needs_laplacian:
