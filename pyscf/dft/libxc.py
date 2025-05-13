@@ -1088,7 +1088,7 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
         rho = numpy.asarray(rho[...,[0,1,2,3,5],:], order='C')
 
     if omega is not None:
-        raise NotImplementedError('use register_custom_functional_() to set omega')
+        xc._set_omega_density_threshold_(omega, 0)
 
     if xc.needs_laplacian:
         raise NotImplementedError('laplacian in meta-GGA method')
@@ -1108,6 +1108,10 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
                             outlen,
                             rho.ctypes,
                             out.ctypes)
+
+    # set omega back to original value if a temporary omega is specified
+    if omega is not None:
+        xc._set_omega_density_threshold_(xc.omega, 0.)
     return out
 
 def eval_xc_eff(xc_code, rho, deriv=1, omega=None):
@@ -1267,6 +1271,8 @@ class XCFunctionalCache:
         nfunc : int
             number of LibXC functional components
         hyb : hybrid coefficients as produced by `parse_xc()`
+        omega : list of float
+            range-separated parameter omega of each functional component
         fn_ids : tuple of int
             LibXC ID of each functional component
         facs : tuple of float
@@ -1307,6 +1313,7 @@ class XCFunctionalCache:
             raise ValueError(f"{xc_code} is not a valid functional")
         if density_threshold or any(omega):
             self._set_omega_density_threshold_(omega, density_threshold)
+        self.omega = omega
         self.xc_objs = [ctypes.cast(self.xc_arr + _XC_FUNC_TYPE_SIZE * i, ctypes.c_void_p)
                         for i in range(self.nfunc)]
 
@@ -1351,8 +1358,10 @@ class XCFunctionalCache:
                 any productive calculations, preferably in the callback.
         '''
         obj_by_id = self.obj_by_id()
-        if density_threshold or (omega and any(omega)):
+        if density_threshold or omega:
             self._set_omega_density_threshold_(omega, density_threshold)
+        if omega:
+            self.omega = omega
         if hyb is not None:
             self.hyb = hyb
         if facs is not None:
@@ -1479,6 +1488,14 @@ def register_custom_functional_(new_xc_code, based_on_xc_code, ext_params=None, 
         xc.xc_code = new_xc_code
         xc.customize_(ext_params, omega, hyb, facs, density_threshold, callback, False)
         return xc
+
+    try:
+        parse_xc(new_xc_code)
+        warnings.warn('Attempting to create a custom functional using a valid built-in xc_code '
+                      f'"{based_on_xc_code}". '
+                      'Consider using a different new_xc_code to avoid confusion.')
+    except Exception:
+        pass
 
     if restricted:
         _CUSTOM_FUNC_R[new_xc_code] = build(0)
