@@ -1480,6 +1480,14 @@ def register_custom_functional_(new_xc_code, based_on_xc_code, ext_params=None, 
         xc.customize_(ext_params, omega, hyb, facs, density_threshold, callback, False)
         return xc
 
+    try:
+        parse_xc(new_xc_code)
+        warnings.warn('Attempting to register a custom functional with xc_code '
+                      f'"{new_xc_code}", which is a valid built-in xc_code. '
+                      'Consider using a different xc_code to avoid confusion.')
+    except Exception:
+        pass
+
     if restricted:
         _CUSTOM_FUNC_R[new_xc_code] = build(0)
     if unrestricted:
