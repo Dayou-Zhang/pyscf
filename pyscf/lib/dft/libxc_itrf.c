@@ -1088,7 +1088,7 @@ void LIBXC_xc_func_end(const int nfn, xc_func_type *func)
 }
 
 void LIBXC_xc_func_set_params(const int nfn, xc_func_type *fn_obj, const double *omega,
-                              const double dens_threshold)
+                              const double dens_threshold, const int force_set)
 {
         int i, j;
         xc_func_type *func = fn_obj;
@@ -1098,8 +1098,8 @@ void LIBXC_xc_func_set_params(const int nfn, xc_func_type *fn_obj, const double 
                 }
 
                 // set the range-separated parameter
-                if (omega[i] != 0) {
-                        // skip if func is not a RSH functional
+                if (force_set || omega[i] != 0) {
+                        // skip if func is not a RSH functional, unless force_set is true
                         if ( xc_func_find_ext_params_name(func, "_omega") >= 0 ) {
                                 xc_func_set_ext_params_name(func, "_omega", omega[i]);
                         }
@@ -1111,6 +1111,8 @@ void LIBXC_xc_func_set_params(const int nfn, xc_func_type *fn_obj, const double 
                                 }
                         }
                 }
+                putchar('\n');
+                fflush(stdout);
 
                 // alpha and beta are hardcoded in many functionals in the libxc
                 // code, e.g. the coefficients of B88 (=1-alpha) and
@@ -1121,9 +1123,6 @@ void LIBXC_xc_func_set_params(const int nfn, xc_func_type *fn_obj, const double 
                 // However, the parameters can be set with the libxc function
                 //void xc_func_set_ext_params_name(xc_func_type *p, const char *name, double par);
                 // since libxc 5.1.0
-#if defined XC_SET_RELATIVITY
-                xc_lda_x_set_params(func, relativity);
-#endif
                 ++func;
         }
 }

@@ -78,7 +78,8 @@ _itrf.LIBXC_eval_xc.argtypes = (ctypes.c_int, ctypes.c_void_p,
                                 ctypes.c_void_p)
 _itrf.LIBXC_xc_func_set_params.argtypes = (ctypes.c_int, ctypes.c_void_p,
                                            ctypes.POINTER(ctypes.c_double),
-                                           ctypes.c_double)
+                                           ctypes.c_double,
+                                           ctypes.c_int)
 
 _itrf.xc_version_string.restype = ctypes.c_char_p
 _itrf.xc_reference.restype = ctypes.c_char_p
@@ -1093,7 +1094,7 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
             omega = [omega] * xc.nfunc
         else:
             assert len(omega) == xc.nfunc
-        xc._set_omega_density_threshold_(omega, 0)
+        xc._set_omega_density_threshold_(omega, 0., force_set=True)
 
     if xc.needs_laplacian:
         raise NotImplementedError('laplacian in meta-GGA method')
@@ -1116,7 +1117,7 @@ def _eval_xc(xc_code, rho, spin=0, deriv=1, omega=None):
 
     # set omega back to original value if a temporary omega is specified
     if omega is not None:
-        xc._set_omega_density_threshold_(xc.omega, 0.)
+        xc._set_omega_density_threshold_(xc.omega, 0., force_set=True)
     return out
 
 def eval_xc_eff(xc_code, rho, deriv=1, omega=None):
@@ -1400,12 +1401,15 @@ Expected {n} but {param.size} provided."""
         except AttributeError:
             pass
 
-    def _set_omega_density_threshold_(self, omega, density_threshold):
+    def _set_omega_density_threshold_(self, omega, density_threshold, force_set=False):
+        #  import traceback
+        #  import sys
+        #  traceback.print_stack(file=sys.stdout)
         if density_threshold is None:
             density_threshold = 0.
         _itrf.LIBXC_xc_func_set_params(self.nfunc, self.xc_arr,
                                        (ctypes.c_double * self.nfunc)(*omega),
-                                       density_threshold)
+                                       density_threshold, int(force_set))
 
     def __del__(self):
         try:
